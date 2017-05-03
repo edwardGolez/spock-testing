@@ -1,0 +1,50 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.2.RELEASE")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'org.springframework.boot'
+
+jar {
+	baseName = 'gs-spring-boot'
+	version =  '0.1.0'
+}
+
+repositories {
+	mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+	// tag::jetty[]
+	compile("org.springframework.boot:spring-boot-starter-web") {
+		exclude module: "spring-boot-starter-tomcat"
+	}
+	compile("org.springframework.boot:spring-boot-starter-jetty")
+	// end::jetty[]
+	// tag::actuator[]
+	compile("org.springframework.boot:spring-boot-starter-actuator")
+	// end::actuator[]
+
+	// JUNIT4
+	testCompile("junit:junit:4.12")
+//	testCompile("org.mockito:mockito-core:2.7.22")
+
+	// SPOCK
+//	testCompile("org.spockframework:spock-spring")
+//	testCompile("cglib:cglib:3.2.4")
+
+	testCompile(
+		'junit:junit:4.12',
+		'org.codehaus.groovy:groovy-all:2.4.4',
+		'org.spockframework:spock-core:1.0-groovy-2.4'
+	)
+}
