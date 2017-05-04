@@ -50,7 +50,30 @@ public class BankAccountServiceImpl implements BankAccountService {
 	@Override
 	public void transfer(BankAccount sourceBankAccount, BankAccount destinationBankAccount, BigDecimal amount)
 			throws InsufficientBalanceException {
+//	    this.withdraw(sourceBankAccount, amount);
+//	    this.deposit(destinationBankAccount, amount);
+        BigDecimal currentBalanceOfSource = sourceBankAccount.getBalance();
+        BigDecimal currentBalanceOfDestination = destinationBankAccount.getBalance();
+        if(amount.compareTo(currentBalanceOfSource) > 0){
+            throw new InsufficientBalanceException(sourceBankAccount, currentBalanceOfSource, amount);
+        }
 
+        BigDecimal netBalanceOfSource = currentBalanceOfSource.subtract(amount);
+        BigDecimal netBalanceOfDestination = currentBalanceOfDestination.add(amount);
+        sourceBankAccount.setBalance(netBalanceOfSource);
+        destinationBankAccount.setBalance(netBalanceOfDestination);
+
+        // add to transactions
+        Transaction transactionOfSource = new Transaction(
+                sourceBankAccount, TransactionType.CREDIT, amount, new Date());
+        transactionOfSource.setStatus(TransactionStatus.CLEARED);
+        transactionDao.saveTransaction(transactionOfSource);
+        bankAccountDao.saveBankAccount(sourceBankAccount);
+        Transaction transactionOfDestination = new Transaction(
+                destinationBankAccount, TransactionType.DEBIT, amount, new Date());
+        transactionOfDestination.setStatus(TransactionStatus.CLEARED);
+        transactionDao.saveTransaction(transactionOfDestination);
+        bankAccountDao.saveBankAccount(destinationBankAccount);
 	}
 
 	@Override
