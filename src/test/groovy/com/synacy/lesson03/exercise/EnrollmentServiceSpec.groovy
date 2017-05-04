@@ -1,11 +1,7 @@
 package com.synacy.lesson03.exercise
 
-import com.synacy.lesson03.exercise.domain.CourseClass
-import com.synacy.lesson03.exercise.domain.EnrollmentDto
-import com.synacy.lesson03.exercise.domain.Student
-import com.synacy.lesson03.exercise.domain.StudentEmailType
-import com.synacy.lesson03.exercise.domain.StudentProfile
-import com.synacy.lesson03.exercise.domain.StudyLoad
+import com.synacy.lesson03.exercise.domain.*
+
 import spock.lang.Specification
 
 class EnrollmentServiceSpec extends Specification {
