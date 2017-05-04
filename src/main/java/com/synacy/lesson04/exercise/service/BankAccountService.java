@@ -17,6 +17,9 @@ public interface BankAccountService {
 	// create transaction then apply(set status to CLEARED) then save
 	void deposit(BankAccount bankAccount, BigDecimal amount);
 
+    // check if bank account's (source) has sufficient balance from the given amount to proceed transfer, otherwise throw an InsufficientBalanceException
+    // transfer amount from a source bank account to a desired bank account destination with given amount (then save)
+    // create transaction then apply(set status to CLEARED) then save
 	void transfer(BankAccount sourceBankAccount, BankAccount destinationBankAccount, BigDecimal amount) throws InsufficientBalanceException;
 
 	// please take note that transactions are to be sorted starting from most recent
