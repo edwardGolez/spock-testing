@@ -12,10 +12,11 @@ public class ShippingService {
 	private SalesOrderService salesOrderService;
 	private WarehouseService warehouseService;
 	private CustomerNotificationService customerNotificationService;
+	private SystemAlarmService systemAlarmService;
 
-	public List<SalesOrder> shipSalesOrderByBatch(ShippingBatch shippingBatch) {
+	public List<SalesOrder> shipSalesOrderByBatch(ShippingBatch shippingBatch) throws BatchShippingException {
 
-		List<SalesOrder> salesOrderForShipment = salesOrderService.fetchSalesOrderDueForShipment(shippingBatch);
+		List<SalesOrder> salesOrderForShipment = fetchSalesOrderForShipment(shippingBatch);
 
 		Map<FinishedGood, Integer> totalItemsShipped = new HashMap<>();
 		for(SalesOrder salesOrder: salesOrderForShipment) {
@@ -29,6 +30,15 @@ public class ShippingService {
 		warehouseService.updateInventoryLevel(totalItemsShipped);
 
 		return salesOrderForShipment;
+	}
+
+	private List<SalesOrder> fetchSalesOrderForShipment(ShippingBatch shippingBatch) throws BatchShippingException {
+		try {
+			return salesOrderService.fetchSalesOrderDueForShipment(shippingBatch);
+		} catch (DataAccessException e) {
+			systemAlarmService.alarm(e);
+			throw new BatchShippingException(e);
+		}
 	}
 
 	private void incrementTotalItemsShipped(Map<FinishedGood, Integer> totalItemsShipped, Map<FinishedGood, Integer> salesOrderItemCount) {
