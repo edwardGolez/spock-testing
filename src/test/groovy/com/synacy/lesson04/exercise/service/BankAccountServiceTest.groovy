@@ -161,16 +161,27 @@ class BankAccountServiceTest extends Specification {
 			bankAccountService.transfer(sourceBankAccount, destinationBankAccount, amount)
 
 		then:
-			2 * transactionDao.saveTransaction(*_) >> { Transaction transaction ->
-				assert bankAccount == transaction.bankAccount
-				assert transactionType == transaction.type
+			1 * transactionDao.saveTransaction(*_) >> { Transaction transaction ->
+				assert sourceBankAccount == transaction.bankAccount
+				assert TransactionType.CREDIT == transaction.type
 				assert amount == transaction.amount
 				assert null != transaction.transactionDate
 			}
 
-		where:
-			bankAccount = [sourceBankAccount,destinationBankAccount]
-			transactionType = [TransactionType.CREDIT,TransactionType.DEBIT]
+			1 * transactionDao.saveTransaction(*_) >> { Transaction transaction ->
+				assert destinationBankAccount == transaction.bankAccount
+				assert TransactionType.DEBIT == transaction.type
+				assert amount == transaction.amount
+				assert null != transaction.transactionDate
+			}
+
+//		where:
+//			bankAccount = [sourceBankAccount, destinationBankAccount]
+//			transactionType = [TransactionType.CREDIT,TransactionType.DEBIT]
+//			bankAccount 			| transactionType
+//			[sourceBankAccount]		| [TransactionType.CREDIT]
+//			[destinationBankAccount] 	| [TransactionType.DEBIT]
+
 	}
 
 }

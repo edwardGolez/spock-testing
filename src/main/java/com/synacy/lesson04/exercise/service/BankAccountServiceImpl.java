@@ -63,6 +63,7 @@ public class BankAccountServiceImpl implements BankAccountService {
 
 		Transaction sourceBankAccountTransaction = new Transaction(sourceBankAccount, TransactionType.CREDIT, amount, new Date());
 		sourceBankAccountTransaction.setStatus(TransactionStatus.CLEARED);
+
 		Transaction destinationBankAccountTransaction = new Transaction(destinationBankAccount, TransactionType.DEBIT, amount, new Date());
 		destinationBankAccountTransaction.setStatus(TransactionStatus.CLEARED);
 
