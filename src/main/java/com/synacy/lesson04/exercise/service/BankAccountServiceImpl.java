@@ -34,8 +34,22 @@ public class BankAccountServiceImpl implements BankAccountService {
 	}
 
 	@Override
-	public void deposit(BankAccount bankAccount, BigDecimal amount) {
+	public void deposit(BankAccount bankAccount, BigDecimal amount)
+			throws InvalidBankAccountStatusException {
+		if (bankAccount.getStatus() != BankAccountStatus.ACTIVE)
+			throw new InvalidBankAccountStatusException(bankAccount, bankAccount.getStatus());
 
+		Transaction transaction = new Transaction(bankAccount, TransactionType.DEBIT, amount, new Date());
+
+		BigDecimal balance = bankAccount.getBalance();
+
+		BigDecimal netBalance = balance.add(amount);
+
+		bankAccount.setBalance(netBalance);
+		transaction.setStatus(TransactionStatus.CLEARED);
+
+		transactionDao.saveTransaction(transaction);
+		bankAccountDao.saveBankAccount(bankAccount);
 	}
 
 	@Override

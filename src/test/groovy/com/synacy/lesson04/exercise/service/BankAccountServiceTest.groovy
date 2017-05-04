@@ -83,8 +83,11 @@ class BankAccountServiceTest extends Specification {
 	def "deposit should throw exception if bank account status is not active" () {
 		given:
 		def bankAccount = Mock(BankAccount)
-		BigDecimal amountToDeposit = 1000.00
 
+		BigDecimal currentBalance = 500
+		BigDecimal amountToDeposit = 1000
+
+		bankAccount.getBalance() >> currentBalance
 		bankAccount.getStatus() >> BankAccountStatus.INACTIVE
 
 		when:
@@ -98,19 +101,23 @@ class BankAccountServiceTest extends Specification {
 
 	def "deposit should record the transaction of the account's current balance"() {
 		given:
+		def accountOwner = Mock(AccountOwner)
 		def bankAccount = Mock(BankAccount)
+		def bankAccountStatus = BankAccountStatus.ACTIVE
 
-		BigDecimal currentBalance = 500
-		BigDecimal amountToDeposit = 1000
+		BigDecimal currentBalance = 100
+		BigDecimal amountToDeposit = 1500
 
+		bankAccount.getOwner() >> accountOwner
 		bankAccount.getBalance() >> currentBalance
+		bankAccount.getStatus() >> bankAccountStatus
 
 		when:
 		bankAccountService.deposit(bankAccount, amountToDeposit)
 
 		then:
 
-		1 * transactionDao.saveTransaction(*_) >> { Transaction transaction
+		1 * transactionDao.saveTransaction(*_) >> { Transaction transaction ->
 			assert bankAccount == transaction.bankAccount
 			assert TransactionType.DEBIT == transaction.type
 			assert amountToDeposit == transaction.amount
@@ -124,19 +131,21 @@ class BankAccountServiceTest extends Specification {
 		def bankAccount = Mock(BankAccount)
 		def bankAccountStatus = BankAccountStatus.ACTIVE
 
-		bankAccount.setOwner(accountOwner)
-		bankAccount.setBalance(100)
-		bankAccount.setStatus(bankAccountStatus)
-
+		BigDecimal currentBalance = 100
 		BigDecimal amountToDeposit = 1500
+
+		bankAccount.getOwner() >> accountOwner
+		bankAccount.getBalance() >> currentBalance
+		bankAccount.getStatus() >> bankAccountStatus
 
 		when:
 		bankAccountService.deposit(bankAccount, amountToDeposit)
 
 		then:
+		bankAccount.getBalance() >> currentBalance + amountToDeposit
 
-		1 * bankAccountService.saveBankAccount(bankAccount) >> { BankAccount account
-			assert bankAccount == account.getOwner()
+		1 * bankAccountDao.saveBankAccount(bankAccount) >> { BankAccount account ->
+			assert accountOwner == account.getOwner()
 			assert 1600 == account.getBalance()
 			assert bankAccountStatus == account.getStatus()
 		}
