@@ -105,7 +105,7 @@ class BankAccountServiceTest extends Specification {
 		then:
 		1 * transactionDao.saveTransaction(*_) >> { Transaction transaction ->
 			assert bankAccount == transaction.bankAccount
-			assert TransactionType.CREDIT == transaction.type
+			assert TransactionType.DEBIT == transaction.type
 			assert amountDeposited == transaction.amount
 			assert null != transaction.transactionDate
 		}
