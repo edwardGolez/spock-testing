@@ -9,7 +9,10 @@ import com.synacy.lesson04.exercise.domain.InsufficientBalanceException
 import com.synacy.lesson04.exercise.domain.InvalidBankAccountStatusException
 import com.synacy.lesson04.exercise.domain.Transaction
 import com.synacy.lesson04.exercise.domain.TransactionType
+import spock.lang.MockingApi
 import spock.lang.Specification
+
+import javax.jws.soap.SOAPBinding
 
 class BankAccountServiceTest extends Specification {
 
@@ -80,7 +83,7 @@ class BankAccountServiceTest extends Specification {
 		}
 	}
 
-	def "deposit should throw exception if bank account status is not active" () {
+	def "deposit should throw exception if bank account status is not active"() {
 		given:
 		def bankAccount = Mock(BankAccount)
 
@@ -151,4 +154,117 @@ class BankAccountServiceTest extends Specification {
 		}
 	}
 
+	def "transfer should throw exception if source bank account is not active"() {
+		given:
+		def source = Mock(BankAccount)
+		def destination = Mock(BankAccount)
+
+		BigDecimal amount = 1000000;
+
+		source.getStatus() >> BankAccountStatus.PENDING
+		destination.getStatus() >> BankAccountStatus.ACTIVE
+
+		when:
+		bankAccountService.transfer(source, destination)
+
+		then:
+		InvalidBankAccountStatusException exception = thrown()
+		source == exception.getBankAccount()
+		BankAccountStatus.PENDING == exception.getBankAccountStatus()
+	}
+
+	def "transfer should throw exception if destination bank account is not active"() {
+		given:
+		def source = Mock(BankAccount)
+		def destination = Mock(BankAccount)
+
+		BigDecimal amount = 1000000;
+
+		source.getStatus() >> BankAccountStatus.ACTIVE
+		destination.getStatus() >> BankAccountStatus.INACTIVE
+
+		when:
+		bankAccountService.transfer(source, destination, amount)
+
+		then:
+		InvalidBankAccountStatusException exception = thrown()
+		destination == exception.getBankAccount()
+		BankAccountStatus.INACTIVE == exception.getBankAccountStatus()
+	}
+
+	def "transfer should throw exception if source bank account balance is less than the given amount"() {
+		given:
+		def source = Mock(BankAccount)
+		def destination = Mock(BankAccount)
+
+		BigDecimal sourceBalance = 999999
+		BigDecimal amount = 1000000
+
+		source.getStatus() >> BankAccountStatus.ACTIVE
+		destination.getStatus() >> BankAccountStatus.ACTIVE
+
+		source.getBalance() >> sourceBalance
+
+		when:
+		bankAccountService.transfer(source, destination, amount)
+
+		then:
+		InsufficientBalanceException exception = thrown()
+		source == exception.getBankAccount()
+		sourceBalance == exception.getCurrentBalance()
+		amount == exception.getAmountToDiminish()
+	}
+
+	def "transfer should record the accounts balance"() {
+		given:
+		def source = Mock(BankAccount)
+		def destination = Mock(BankAccount)
+		def sourceTransaction = Mock(Transaction)
+		def destinationTransaction = Mock(Transaction)
+
+		BigDecimal sourceBalance = 1000
+		BigDecimal destinationBalance = 0
+
+		BigDecimal amount = 100
+
+		source.getStatus() >> BankAccountStatus.ACTIVE
+		destination.getStatus() >> BankAccountStatus.ACTIVE
+
+		source.getBalance() >> sourceBalance
+		destination.getBalance() >> destinationBalance
+
+		when:
+		bankAccountService.transfer(source, destination, amount)
+
+		then:
+		source.getBalance() >> 900
+		destination.getBalance() >> 100
+
+		1 * transactionDao.saveTransaction(sourceTransaction) >> { Transaction transaction ->
+			assert source == transaction.bankAccount
+			assert TransactionType.CREDIT == transaction.type
+			assert 900 == transaction.amount
+			assert null != transaction.transactionDate
+		}
+
+		1 * transactionDao.saveTransaction(destinationTransaction) >> { Transaction transaction ->
+			assert destination == transaction.bankAccount
+			assert TransactionType.DEBIT == transaction.type
+			assert 100 == transaction.amount
+			assert null != transaction.transactionDate
+		}
+	}
+
+	def "transfer should record the accounts new balance"() {
+		given:
+		def source = Mock(BankAccount)
+		def destination = Mock(BankAccount)
+
+		when:
+		bankAccountService.transfer(source, destination, amount)
+
+		then:
+		1 * bankAccountDao.saveBankAccount(source)
+		1 * bankAccountDao.saveBankAccount(destination)
+	}
 }
