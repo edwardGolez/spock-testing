@@ -176,14 +176,15 @@ class BankAccountServiceTest extends Specification {
 	def "transfer should throw an exception if sourceBankAccount's balance is less than given amount"() {
 		given:
 			def sourceBankAccount = Mock(BankAccount)
+			def destinationBankAccount = Mock(BankAccount)
 
 			def sourceBankAccountBalance = new BigDecimal(2258.25)
-			def amount = new BigDecimal(500.00)
+			def amount = new BigDecimal(5000.00)
 
 			sourceBankAccount.getBalance() >> sourceBankAccountBalance
 
 		when:
-			bankAccountService.tansfer(sourceBankAccount, amount)
+			bankAccountService.transfer(sourceBankAccount, destinationBankAccount, amount)
 
 		then:
 			InsufficientBalanceException exception = thrown()

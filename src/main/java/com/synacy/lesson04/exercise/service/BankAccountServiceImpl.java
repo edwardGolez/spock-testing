@@ -54,6 +54,9 @@ public class BankAccountServiceImpl implements BankAccountService {
 		BigDecimal sourceBankAccountBalance = sourceBankAccount.getBalance();
 		BigDecimal destinationBankAccountBalance = destinationBankAccount.getBalance();
 
+		if(amount.compareTo(sourceBankAccountBalance) > 0){
+			throw new InsufficientBalanceException(sourceBankAccount, sourceBankAccountBalance, amount);
+		}
 
 		BigDecimal sourceNetBalance = sourceBankAccountBalance.subtract(amount);
 		BigDecimal destinationNetBalance = destinationBankAccountBalance.add(amount);
