@@ -41,11 +41,7 @@ class EnrollmentServiceSpec extends Specification {
 
         enrollmentDetails.getStudentProfile() >> studentProfile
 
-        CourseClass courseClass1 = Mock()
-        CourseClass courseClass2 = Mock()
-        def enrolledClasses = [
-                courseClass1, courseClass2
-        ]
+        def enrolledClasses = []
         enrollmentDetails.getEnrolledClasses() >> enrolledClasses
 
         when:
@@ -79,11 +75,7 @@ class EnrollmentServiceSpec extends Specification {
         given:
         EnrollmentDto enrollmentDetails = Mock()
 
-        CourseClass courseClass1 = Mock()
-        CourseClass courseClass2 = Mock()
-        def enrolledClasses = [
-                courseClass1, courseClass2
-        ]
+        def enrolledClasses = []
         enrollmentDetails.getEnrolledClasses() >> enrolledClasses
 
         when:
@@ -93,25 +85,20 @@ class EnrollmentServiceSpec extends Specification {
         1 * enrollmentNotificationService.emailStudent(StudentEmailType.ENROLLMENT, enrollmentDetails)
     }
 
-    def "processEnrollment should print study load of student with enrollment details"() {
+    def "processEnrollment should print study load of student with the details of its enrollment"() {
         given:
         EnrollmentDto enrollmentDetails = Mock()
         StudyLoad studyLoad = Mock()
 
-        CourseClass courseClass1 = Mock()
-        CourseClass courseClass2 = Mock()
-        def enrolledClasses = [
-                courseClass1, courseClass2
-        ]
+        def enrolledClasses = []
         enrollmentDetails.getEnrolledClasses() >> enrolledClasses
 
         studyLoadFormatter.format(enrollmentDetails) >> studyLoad
-        def studyLoadPrintable = studyLoad
 
         when:
         service.processEnrollment(enrollmentDetails)
 
         then:
-        1 * systemService.print(studyLoadPrintable)
+        1 * systemService.print(studyLoad)
     }
 }
