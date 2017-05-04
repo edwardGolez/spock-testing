@@ -197,12 +197,17 @@ class BankAccountServiceTest extends Specification {
 		given:
 			def bankAccount = Mock(BankAccount)
 
-			def bankAccountsSets = new HashSet<BankAccount>()
-			bankAccountsSets.add(Mock(BankAccount))
-			bankAccountsSets.add(Mock(BankAccount))
+			def allTransactionSet = new HashSet<Transaction>()
+			def allTransactionList = new ArrayList<Transaction>()
+
+			allTransactionList.addAll(allTransactionSet)
+
+			transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> allTransactionSet
 
 		expect:
-			bankAccountService.fetchAllTransactions(bankAccount) == bankAccountsSets
+			bankAccountService.fetchAllTransactions(bankAccount) == allTransactionList
+
+
 
 
 	}
