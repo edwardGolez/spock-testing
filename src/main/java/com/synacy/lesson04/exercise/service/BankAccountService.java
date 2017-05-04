@@ -9,20 +9,22 @@ import java.util.List;
 
 public interface BankAccountService {
 
-	// diminish bank account balance with given amount (then save)
-	// create transaction then apply(set status to CLEARED) then save
+	// (1) diminish bank account balance with given amount (then save)
+	// (2) create transaction then apply(set status to CLEARED) then save
 	void withdraw(BankAccount bankAccount, BigDecimal amount) throws InsufficientBalanceException;
 
-	// increase bank account balance with given amount (then save)
-	// create transaction then apply(set status to CLEARED) then save
+	// (1) increase bank account balance with given amount (then save)
+	// (2) create transaction then apply(set status to CLEARED) then save
 	void deposit(BankAccount bankAccount, BigDecimal amount);
 
-    // check if bank account's (source) has sufficient balance from the given amount to proceed transfer, otherwise throw an InsufficientBalanceException
-    // transfer amount from a source bank account to a desired bank account destination with given amount (then save)
-    // create transaction then apply(set status to CLEARED) then save
+    // (1) check if bank account's (source) has sufficient balance from the given amount to proceed transfer, otherwise throw an InsufficientBalanceException
+    // (2) transfer amount from a source bank account to a desired bank account destination with given amount (then save)
+    // (3) create transaction then apply(set status to CLEARED) then save
 	void transfer(BankAccount sourceBankAccount, BankAccount destinationBankAccount, BigDecimal amount) throws InsufficientBalanceException;
 
 	// please take note that transactions are to be sorted starting from most recent
-	List<Transaction> fetchAllTransactions(BankAccount bankAccount);
+	// (1) fetch all transactions from a given bank account and return a list
+    // (2) make sure that transactions are sorted by the most recent transaction
+    List<Transaction> fetchAllTransactions(BankAccount bankAccount);
 
 }
