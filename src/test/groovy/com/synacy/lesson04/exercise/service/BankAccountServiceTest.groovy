@@ -130,4 +130,39 @@ class BankAccountServiceTest extends Specification {
         amountToTransfer == exception.amountToDiminish
     }
 
+    def "transfer should transfer a given amount from source bank account to destination bank account"() {
+        given:
+        BankAccount sourceBankAccount = Mock()
+        BankAccount destinationBankAccount = Mock()
+        def currentBalanceOfSource = 3000.00
+        def currentBalanceOfDestination = 1250.00
+        sourceBankAccount.getBalance() >> new BigDecimal(currentBalanceOfSource)
+        destinationBankAccount.getBalance() >> new BigDecimal(currentBalanceOfDestination)
+
+        def amountToTransfer = 500.00
+//        def balanceOfSourceAfterTransfer = 2500.00
+//        def balanceOfDestinationAfterTransfer = 1750.00
+//        bankAccountService.withdraw(sourceBankAccount, amountToTransfer) >> balanceOfSourceAfterTransfer
+//        bankAccountService.deposit(destinationBankAccount, amountToTransfer) >> balanceOfDestinationAfterTransfer
+
+//        currentBalanceOfSource.subtract(amountToTransfer) >> new BigDecimal(balanceOfSourceAfterTransfer)
+//        currentBalanceOfDestination.add(amountToTransfer) >> new BigDecimal(balanceOfDestinationAfterTransfer)
+//        sourceBankAccount.setBalance(balanceOfSourceAfterTransfer)
+//        destinationBankAccount.setBalance(balanceOfDestinationAfterTransfer)
+
+        when:
+        bankAccountService.transfer(sourceBankAccount, destinationBankAccount, amountToTransfer)
+
+        then:
+        1 * sourceBankAccount.setBalance(2500.00)
+        1 * destinationBankAccount.setBalance(1750.00)
+
+        then:
+        1 * bankAccountDao.saveBankAccount(sourceBankAccount)
+        1 * bankAccountDao.saveBankAccount(destinationBankAccount)
+//        balanceOfSourceAfterTransfer == sourceBankAccount.balance
+//        balanceOfDestinationAfterTransfer == destinationBankAccount.balance
+    }
+
+
 }
