@@ -193,4 +193,18 @@ class BankAccountServiceTest extends Specification {
 			amount == exception.amountToDiminish
 	}
 
+	def "fetchAllTransactions should return list of transactions of the given bank account"(){
+		given:
+			def bankAccount = Mock(BankAccount)
+
+			def bankAccountsSets = new HashSet<BankAccount>()
+			bankAccountsSets.add(Mock(BankAccount))
+			bankAccountsSets.add(Mock(BankAccount))
+
+		expect:
+			bankAccountService.fetchAllTransactions(bankAccount) == bankAccountsSets
+
+
+	}
+
 }
