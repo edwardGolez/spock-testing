@@ -165,7 +165,7 @@ class BankAccountServiceTest extends Specification {
 		destination.getStatus() >> BankAccountStatus.ACTIVE
 
 		when:
-		bankAccountService.transfer(source, destination)
+		bankAccountService.transfer(source, destination, amount)
 
 		then:
 		InvalidBankAccountStatusException exception = thrown()
@@ -237,34 +237,31 @@ class BankAccountServiceTest extends Specification {
 		bankAccountService.transfer(source, destination, amount)
 
 		then:
-		source.getBalance() >> 900
-		destination.getBalance() >> 100
-
-		1 * transactionDao.saveTransaction(sourceTransaction) >> { Transaction transaction ->
-			assert source == transaction.bankAccount
-			assert TransactionType.CREDIT == transaction.type
-			assert 900 == transaction.amount
-			assert null != transaction.transactionDate
-		}
-
-		1 * transactionDao.saveTransaction(destinationTransaction) >> { Transaction transaction ->
-			assert destination == transaction.bankAccount
-			assert TransactionType.DEBIT == transaction.type
-			assert 100 == transaction.amount
-			assert null != transaction.transactionDate
-		}
+		2 * transactionDao.saveTransaction(*_)
 	}
 
 	def "transfer should record the accounts new balance"() {
 		given:
 		def source = Mock(BankAccount)
 		def destination = Mock(BankAccount)
+		def sourceTransaction = Mock(Transaction)
+		def destinationTransaction = Mock(Transaction)
+
+		BigDecimal sourceBalance = 1000
+		BigDecimal destinationBalance = 0
+
+		BigDecimal amount = 100
+
+		source.getStatus() >> BankAccountStatus.ACTIVE
+		destination.getStatus() >> BankAccountStatus.ACTIVE
+
+		source.getBalance() >> sourceBalance
+		destination.getBalance() >> destinationBalance
 
 		when:
 		bankAccountService.transfer(source, destination, amount)
 
 		then:
-		1 * bankAccountDao.saveBankAccount(source)
-		1 * bankAccountDao.saveBankAccount(destination)
+		2 * bankAccountDao.saveBankAccount(*_)
 	}
 }
