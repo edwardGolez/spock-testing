@@ -114,4 +114,31 @@ class BankAccountServiceTest extends Specification {
 			}
 	}
 
+	def "transfer should diminish given sourceBankAccount with the given amount and increment the given destinationBankAccount with the same amount"() {
+		given:
+			def sourceBankAccount = Mock(BankAccount)
+			def destinationBankAccount = Mock(BankAccount)
+
+			def sourceBankAccountBalance = new BigDecimal(2258.25)
+			def destinationBankAccountBalance = new BigDecimal(1000.00)
+
+			def amount = new BigDecimal(500.00)
+
+			def sourceExpectedNetBalance = new BigDecimal(1758.25)
+			def destinationExpectedNetBalance = new BigDecimal(1500.00)
+
+			destinationBankAccount.getBalance() >> destinationBankAccountBalance
+			sourceBankAccount.getBalance() >> sourceBankAccountBalance
+		when:
+			bankAccountService.transfer(sourceBankAccount, destinationBankAccount, amount)
+
+		then:
+			1 * sourceBankAccount.setBalance(sourceExpectedNetBalance)
+			1 * destinationBankAccount.setBalance(destinationExpectedNetBalance)
+
+		then:
+			1 * bankAccountDao.saveBankAccount(sourceBankAccount)
+			1 * bankAccountDao.saveBankAccount(destinationBankAccount)
+	}
+
 }
