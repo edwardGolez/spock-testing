@@ -2,8 +2,11 @@ package com.synacy.lesson04.exercise.service
 
 import com.synacy.lesson04.exercise.dao.BankAccountDao
 import com.synacy.lesson04.exercise.dao.TransactionDao
+import com.synacy.lesson04.exercise.domain.AccountOwner
 import com.synacy.lesson04.exercise.domain.BankAccount
+import com.synacy.lesson04.exercise.domain.BankAccountStatus
 import com.synacy.lesson04.exercise.domain.InsufficientBalanceException
+import com.synacy.lesson04.exercise.domain.InvalidBankAccountStatusException
 import com.synacy.lesson04.exercise.domain.Transaction
 import com.synacy.lesson04.exercise.domain.TransactionType
 import spock.lang.Specification
@@ -74,6 +77,68 @@ class BankAccountServiceTest extends Specification {
 			assert TransactionType.CREDIT == transaction.type
 			assert amountWithdrawn == transaction.amount
 			assert null != transaction.transactionDate
+		}
+	}
+
+	def "deposit should throw exception if bank account status is not active" () {
+		given:
+		def bankAccount = Mock(BankAccount)
+		BigDecimal amountToDeposit = 1000.00
+
+		bankAccount.getStatus() >> BankAccountStatus.INACTIVE
+
+		when:
+		bankAccountService.deposit(bankAccount, amountToDeposit)
+
+		then:
+		InvalidBankAccountStatusException exception = thrown()
+		bankAccount == exception.getBankAccount()
+		BankAccountStatus.INACTIVE == exception.getBankAccountStatus()
+	}
+
+	def "deposit should record the transaction of the account's current balance"() {
+		given:
+		def bankAccount = Mock(BankAccount)
+
+		BigDecimal currentBalance = 500
+		BigDecimal amountToDeposit = 1000
+
+		bankAccount.getBalance() >> currentBalance
+
+		when:
+		bankAccountService.deposit(bankAccount, amountToDeposit)
+
+		then:
+
+		1 * transactionDao.saveTransaction(*_) >> { Transaction transaction
+			assert bankAccount == transaction.bankAccount
+			assert TransactionType.DEBIT == transaction.type
+			assert amountToDeposit == transaction.amount
+			assert null != transaction.transactionDate
+		}
+	}
+
+	def "deposit should record the bank account's new balance"() {
+		given:
+		def accountOwner = Mock(AccountOwner)
+		def bankAccount = Mock(BankAccount)
+		def bankAccountStatus = BankAccountStatus.ACTIVE
+
+		bankAccount.setOwner(accountOwner)
+		bankAccount.setBalance(100)
+		bankAccount.setStatus(bankAccountStatus)
+
+		BigDecimal amountToDeposit = 1500
+
+		when:
+		bankAccountService.deposit(bankAccount, amountToDeposit)
+
+		then:
+
+		1 * bankAccountService.saveBankAccount(bankAccount) >> { BankAccount account
+			assert bankAccount == account.getOwner()
+			assert 1600 == account.getBalance()
+			assert bankAccountStatus == account.getStatus()
 		}
 	}
 
