@@ -141,4 +141,36 @@ class BankAccountServiceTest extends Specification {
 			1 * bankAccountDao.saveBankAccount(destinationBankAccount)
 	}
 
+	def "transfer should record the transaction details of both sourceBankAccount and destinationBankAccount during the transfer"() {
+		given:
+			def sourceBankAccount = Mock(BankAccount)
+			def destinationBankAccount = Mock(BankAccount)
+
+			def sourceBankAccountBalance = new BigDecimal(2258.25)
+			def destinationBankAccountBalance = new BigDecimal(1000.00)
+
+			def amount = new BigDecimal(500.00)
+
+			//def sourceExpectedNetBalance = new BigDecimal(1758.25)
+			//def destinationExpectedNetBalance = new BigDecimal(1500.00)
+
+			destinationBankAccount.getBalance() >> destinationBankAccountBalance
+			sourceBankAccount.getBalance() >> sourceBankAccountBalance
+
+		when:
+			bankAccountService.transfer(sourceBankAccount, destinationBankAccount, amount)
+
+		then:
+			2 * transactionDao.saveTransaction(*_) >> { Transaction transaction ->
+				assert bankAccount == transaction.bankAccount
+				assert transactionType == transaction.type
+				assert amount == transaction.amount
+				assert null != transaction.transactionDate
+			}
+
+		where:
+			bankAccount = [sourceBankAccount,destinationBankAccount]
+			transactionType = [TransactionType.CREDIT,TransactionType.DEBIT]
+	}
+
 }
