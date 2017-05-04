@@ -80,16 +80,16 @@ class BankAccountServiceTest extends Specification {
 	def "deposit should increment given bank account's balance with given amount then save"() {
 		given:
 			def bankAccount = Mock(BankAccount)
-			def accountBalance = new BigDecimal(2258.25)
+			def balance = new BigDecimal(2258.25)
 			def amount = new BigDecimal(500.00)
-			def newAccountBalance = new BigDecimal(2758.25)
+			def netBalance = new BigDecimal(2758.25)
 
-			bankAccount.getBalance() >> accountBalance
+			bankAccount.getBalance() >> balance
 		when:
 			bankAccountService.deposit(bankAccount, amount)
 
 		then:
-			1 * bankAccount.setBalance(newAccountBalance)
+			1 * bankAccount.setBalance(netBalance)
 
 		then:
 			1 * bankAccountDao.saveBankAccount(bankAccount)

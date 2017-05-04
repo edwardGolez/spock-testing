@@ -35,7 +35,12 @@ public class BankAccountServiceImpl implements BankAccountService {
 
 	@Override
 	public void deposit(BankAccount bankAccount, BigDecimal amount) {
+		BigDecimal balance = bankAccount.getBalance();
+		BigDecimal netBalance = balance.add(amount);
 
+		bankAccount.setBalance(netBalance);
+
+		bankAccountDao.saveBankAccount(bankAccount);
 	}
 
 	@Override
