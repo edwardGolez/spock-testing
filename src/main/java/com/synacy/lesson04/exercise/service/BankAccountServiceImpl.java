@@ -61,6 +61,14 @@ public class BankAccountServiceImpl implements BankAccountService {
 		sourceBankAccount.setBalance(sourceNetBalance);
 		destinationBankAccount.setBalance(destinationNetBalance);
 
+		Transaction sourceBankAccountTransaction = new Transaction(sourceBankAccount, TransactionType.CREDIT, amount, new Date());
+		sourceBankAccountTransaction.setStatus(TransactionStatus.CLEARED);
+		Transaction destinationBankAccountTransaction = new Transaction(destinationBankAccount, TransactionType.DEBIT, amount, new Date());
+		destinationBankAccountTransaction.setStatus(TransactionStatus.CLEARED);
+
+		transactionDao.saveTransaction(sourceBankAccountTransaction);
+		transactionDao.saveTransaction(destinationBankAccountTransaction);
+
 		bankAccountDao.saveBankAccount(sourceBankAccount);
 		bankAccountDao.saveBankAccount(destinationBankAccount);
 	}
