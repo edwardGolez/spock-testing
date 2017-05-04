@@ -95,4 +95,23 @@ class BankAccountServiceTest extends Specification {
 			1 * bankAccountDao.saveBankAccount(bankAccount)
 	}
 
+	def "deposit should record the transaction details of the bank account during deposit"() {
+		given:
+			def bankAccount = Mock(BankAccount)
+			def balance = new BigDecimal(2258.25)
+			def amount = new BigDecimal(500.00)
+			bankAccount.getBalance() >> new BigDecimal(balance)
+
+		when:
+			bankAccountService.deposit(bankAccount, amount)
+
+		then:
+			1 * transactionDao.saveTransaction(*_) >> { Transaction transaction ->
+				assert bankAccount == transaction.bankAccount
+				assert TransactionType.DEBIT == transaction.type
+				assert amount == transaction.amount
+				assert null != transaction.transactionDate
+			}
+	}
+
 }
