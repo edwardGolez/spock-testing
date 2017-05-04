@@ -40,6 +40,10 @@ public class BankAccountServiceImpl implements BankAccountService {
 
 		bankAccount.setBalance(netBalance);
 
+		Transaction transaction = new Transaction(bankAccount, TransactionType.DEBIT, amount, new Date());
+		transaction.setStatus(TransactionStatus.CLEARED);
+		transactionDao.saveTransaction(transaction);
+
 		bankAccountDao.saveBankAccount(bankAccount);
 	}
 
