@@ -40,7 +40,7 @@ dependencies {
 
 	// SPOCK
 //	testCompile("org.spockframework:spock-spring")
-//	testCompile("cglib:cglib:3.2.4")
+	testCompile("cglib:cglib:3.2.4")
 
 	testCompile(
 		'junit:junit:4.12',
