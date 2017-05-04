@@ -151,9 +151,6 @@ class BankAccountServiceTest extends Specification {
 
 			def amount = new BigDecimal(500.00)
 
-			//def sourceExpectedNetBalance = new BigDecimal(1758.25)
-			//def destinationExpectedNetBalance = new BigDecimal(1500.00)
-
 			destinationBankAccount.getBalance() >> destinationBankAccountBalance
 			sourceBankAccount.getBalance() >> sourceBankAccountBalance
 
@@ -174,14 +171,25 @@ class BankAccountServiceTest extends Specification {
 				assert amount == transaction.amount
 				assert null != transaction.transactionDate
 			}
+	}
 
-//		where:
-//			bankAccount = [sourceBankAccount, destinationBankAccount]
-//			transactionType = [TransactionType.CREDIT,TransactionType.DEBIT]
-//			bankAccount 			| transactionType
-//			[sourceBankAccount]		| [TransactionType.CREDIT]
-//			[destinationBankAccount] 	| [TransactionType.DEBIT]
+	def "transfer should throw an exception if sourceBankAccount's balance is less than given amount"() {
+		given:
+			def sourceBankAccount = Mock(BankAccount)
 
+			def sourceBankAccountBalance = new BigDecimal(2258.25)
+			def amount = new BigDecimal(500.00)
+
+			sourceBankAccount.getBalance() >> sourceBankAccountBalance
+
+		when:
+			bankAccountService.tansfer(sourceBankAccount, amount)
+
+		then:
+			InsufficientBalanceException exception = thrown()
+			sourceBankAccount == exception.bankAccount
+			sourceBankAccountBalance == exception.currentBalance
+			amount == exception.amountToDiminish
 	}
 
 }
