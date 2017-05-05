@@ -81,8 +81,7 @@ public class BankAccountServiceImpl implements BankAccountService {
 
 		Set<Transaction> allTransactionSet = transactionDao.fetchAllTransactionsOfBankAccount(bankAccount);
 
-		List<Transaction> allTransactionList = new ArrayList<>();
-		allTransactionList.addAll(allTransactionSet);
+		List<Transaction> allTransactionList = new ArrayList<>(allTransactionSet);
 
 		Comparator<Transaction> transactionComparator = Comparator.comparing(Transaction::getTransactionDate);
 		allTransactionList.sort(transactionComparator.reversed());

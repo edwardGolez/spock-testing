@@ -223,5 +223,16 @@ class BankAccountServiceTest extends Specification {
             expectedTransactionList == actualTransactionList
     }
 
+    def "fetchAllTransactions should return empty list when given empty transactions from transaction Dao"() {
+        given:
+            BankAccount bankAccount = Mock()
+
+            transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> []
+
+        when:
+            def actualTransactionList = bankAccountService.fetchAllTransactions(bankAccount)
+        then:
+            0 == actualTransactionList.size()
+    }
 }
 
