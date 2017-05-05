@@ -56,8 +56,10 @@ public class BankAccountServiceImpl implements BankAccountService {
 
 	@Override
 	public void transfer(BankAccount sourceBankAccount, BankAccount destinationBankAccount, BigDecimal amount)
-			throws InsufficientBalanceException {
+			throws InsufficientBalanceException, InsufficientDepositException {
 
+		withdraw(sourceBankAccount, amount);
+		deposit(destinationBankAccount, amount);
 	}
 
 	@Override
