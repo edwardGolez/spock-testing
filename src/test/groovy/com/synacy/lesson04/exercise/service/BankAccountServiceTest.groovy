@@ -264,4 +264,37 @@ class BankAccountServiceTest extends Specification {
 		then:
 		2 * bankAccountDao.saveBankAccount(*_)
 	}
+
+	def "fetchAllTransactions should return bankAccount's transactions sorted by latest date "() {
+		given:
+		def bankAccount = Mock(BankAccount)
+		def accountOwner = Mock(AccountOwner)
+
+		bankAccount.getOwner() >> accountOwner
+
+		Transaction transaction1 = Mock(Transaction)
+		Transaction transaction2 = Mock(Transaction)
+		Transaction transaction3 = Mock(Transaction)
+
+		def transactions = [
+			transaction1, transaction2, transaction3
+		]
+
+		transaction1.getTransactionDate() >> new Date(2014, 01, 01)
+		transaction2.getTransactionDate() >> new Date(2015, 01, 01)
+		transaction3.getTransactionDate() >> new Date(2016, 01, 01)
+
+		transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> transactions
+
+		def expectedTransactions = [
+			transaction3, transaction2, transaction1
+		]
+
+		when:
+		bankAccountService.fetchAllTransactions(bankAccount)
+
+		then:
+		1 * transactionDao.fetchAllTransactionsOfBankAccount(bankAccount);
+		expectedTransactions == transactionDao.fetchAllTransactionsOfBankAccount(bankAccount);
+	}
 }
