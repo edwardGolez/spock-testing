@@ -9,8 +9,9 @@ import java.util.List;
 
 public interface BankAccountService {
 
-	// (1) diminish bank account balance with given amount (then save)
-	// (2) create transaction then apply(set status to CLEARED) then save
+	// (1) check if bank account's (source) has sufficient balance from the given amount to proceed transfer, otherwise throw an InsufficientBalanceException
+	// (2) diminish bank account balance with given amount (then save)
+	// (3) create transaction then apply(set status to CLEARED) then save
 	void withdraw(BankAccount bankAccount, BigDecimal amount) throws InsufficientBalanceException;
 
 	// (1) increase bank account balance with given amount (then save)
