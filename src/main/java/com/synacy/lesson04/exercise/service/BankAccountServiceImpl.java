@@ -5,8 +5,7 @@ import com.synacy.lesson04.exercise.dao.TransactionDao;
 import com.synacy.lesson04.exercise.domain.*;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class BankAccountServiceImpl implements BankAccountService {
 
@@ -36,17 +35,57 @@ public class BankAccountServiceImpl implements BankAccountService {
 	@Override
 	public void deposit(BankAccount bankAccount, BigDecimal amount) {
 
+		BigDecimal currentBalance = bankAccount.getBalance();
+		BigDecimal newBalance = currentBalance.add(amount);
+
+		Transaction transaction = new Transaction(bankAccount, TransactionType.DEBIT, amount, new Date());
+		bankAccount.setBalance(newBalance);
+		transaction.setStatus(TransactionStatus.CLEARED);
+		transactionDao.saveTransaction(transaction);
+
+		bankAccountDao.saveBankAccount(bankAccount);
 	}
 
 	@Override
 	public void transfer(BankAccount sourceBankAccount, BankAccount destinationBankAccount, BigDecimal amount)
 			throws InsufficientBalanceException {
 
+		BigDecimal currentBalance = sourceBankAccount.getBalance();
+
+		if(currentBalance.compareTo(amount) < 0) {
+			throw new InsufficientBalanceException(sourceBankAccount, currentBalance, amount);
+		}
+
+		BigDecimal newBalance = currentBalance.subtract(amount);
+
+		Transaction creditTransaction = new Transaction(sourceBankAccount, TransactionType.CREDIT, amount, new Date());
+		sourceBankAccount.setBalance(newBalance);
+
+		currentBalance = destinationBankAccount.getBalance();
+		newBalance = currentBalance.add(amount);
+
+		Transaction debitTransaction = new Transaction(destinationBankAccount, TransactionType.DEBIT, amount, new Date());
+		destinationBankAccount.setBalance(newBalance);
+
+		transactionDao.saveTransaction(creditTransaction);
+		bankAccountDao.saveBankAccount(sourceBankAccount);
+		transactionDao.saveTransaction(debitTransaction);
+		bankAccountDao.saveBankAccount(destinationBankAccount);
 	}
 
 	@Override
 	public List<Transaction> fetchAllTransactions(BankAccount bankAccount) {
-		return null;
+
+		Set<Transaction> transactions = transactionDao.fetchAllTransactionsOfBankAccount(bankAccount);
+
+		List<Transaction> sortedTransactions = new ArrayList<>();
+
+		sortedTransactions.addAll(transactions);
+
+		Collections.sort(sortedTransactions, (transaction1, transaction2) ->
+				transaction1.getTransactionDate().after(transaction2.getTransactionDate())? -1 : 1);
+
+		return sortedTransactions;
 	}
 
 	public BankAccountDao getBankAccountDao() {
