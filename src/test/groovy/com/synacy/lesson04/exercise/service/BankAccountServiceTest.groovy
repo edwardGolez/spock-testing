@@ -5,8 +5,11 @@ import com.synacy.lesson04.exercise.dao.TransactionDao
 import com.synacy.lesson04.exercise.domain.BankAccount
 import com.synacy.lesson04.exercise.domain.InsufficientBalanceException
 import com.synacy.lesson04.exercise.domain.Transaction
+import com.synacy.lesson04.exercise.domain.TransactionStatus
 import com.synacy.lesson04.exercise.domain.TransactionType
 import spock.lang.Specification
+
+import java.text.SimpleDateFormat
 
 class BankAccountServiceTest extends Specification {
 
@@ -108,6 +111,7 @@ class BankAccountServiceTest extends Specification {
 			assert TransactionType.DEBIT == transaction.type
 			assert amountDeposited == transaction.amount
 			assert null != transaction.transactionDate
+            assert TransactionStatus.CLEARED == transaction.status
 		}
 	}
 
@@ -136,19 +140,10 @@ class BankAccountServiceTest extends Specification {
         BankAccount destinationBankAccount = Mock()
         def currentBalanceOfSource = 3000.00
         def currentBalanceOfDestination = 1250.00
+        def amountToTransfer = 500.00
+
         sourceBankAccount.getBalance() >> new BigDecimal(currentBalanceOfSource)
         destinationBankAccount.getBalance() >> new BigDecimal(currentBalanceOfDestination)
-
-        def amountToTransfer = 500.00
-//        def balanceOfSourceAfterTransfer = 2500.00
-//        def balanceOfDestinationAfterTransfer = 1750.00
-//        bankAccountService.withdraw(sourceBankAccount, amountToTransfer) >> balanceOfSourceAfterTransfer
-//        bankAccountService.deposit(destinationBankAccount, amountToTransfer) >> balanceOfDestinationAfterTransfer
-
-//        currentBalanceOfSource.subtract(amountToTransfer) >> new BigDecimal(balanceOfSourceAfterTransfer)
-//        currentBalanceOfDestination.add(amountToTransfer) >> new BigDecimal(balanceOfDestinationAfterTransfer)
-//        sourceBankAccount.setBalance(balanceOfSourceAfterTransfer)
-//        destinationBankAccount.setBalance(balanceOfDestinationAfterTransfer)
 
         when:
         bankAccountService.transfer(sourceBankAccount, destinationBankAccount, amountToTransfer)
@@ -160,9 +155,74 @@ class BankAccountServiceTest extends Specification {
         then:
         1 * bankAccountDao.saveBankAccount(sourceBankAccount)
         1 * bankAccountDao.saveBankAccount(destinationBankAccount)
-//        balanceOfSourceAfterTransfer == sourceBankAccount.balance
-//        balanceOfDestinationAfterTransfer == destinationBankAccount.balance
     }
 
+    def "transfer should record the transaction of the bank account's balances both from source and destination"() {
+        given:
+        def sourceBankAccount = Mock(BankAccount)
+        def destinationBankAccount = Mock(BankAccount)
+        sourceBankAccount.getBalance() >> new BigDecimal(2258.25)
+        destinationBankAccount.getBalance() >> new BigDecimal(2258.25)
+
+        def amountToTransfer = 500.00
+
+        when:
+        bankAccountService.transfer(sourceBankAccount, destinationBankAccount, amountToTransfer)
+
+        then:
+        1 * transactionDao.saveTransaction(*_) >> { Transaction transaction ->
+            assert sourceBankAccount == transaction.bankAccount
+            assert TransactionType.CREDIT == transaction.type
+            assert amountToTransfer == transaction.amount
+            assert null != transaction.transactionDate
+            assert TransactionStatus.CLEARED == transaction.status
+        }
+        1 * transactionDao.saveTransaction(*_) >> { Transaction transaction ->
+            assert destinationBankAccount == transaction.bankAccount
+            assert TransactionType.DEBIT == transaction.type
+            assert amountToTransfer == transaction.amount
+            assert null != transaction.transactionDate
+            assert TransactionStatus.CLEARED == transaction.status
+        }
+    }
+
+    def "fetchAllTransactions should fetch all transactions from a given bank account"() {
+        given:
+        BankAccount bankAccount = Mock()
+
+        Transaction transaction1 = new Transaction(bankAccount, TransactionType.DEBIT, 5000.00, new Date())
+        Transaction transaction2 = new Transaction(bankAccount, TransactionType.DEBIT, 6000.00, new Date())
+        def expectedTransactions = [
+                transaction1, transaction2
+        ]
+        transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> expectedTransactions
+
+        when:
+        bankAccountService.fetchAllTransactions(bankAccount)
+
+        then:
+        expectedTransactions.asList() == bankAccountService.fetchAllTransactions(bankAccount)
+    }
+
+    def "fetchAllTransactions should see to it that the fetched records are sorted by the most recent transaction"() {
+        given:
+        BankAccount bankAccount = Mock()
+
+        Date date1 = new SimpleDateFormat("MM-dd-yyyy").parse("05-01-2017")
+        Date date2 = new SimpleDateFormat("MM-dd-yyyy").parse("05-03-2017")
+        Date date3 = new SimpleDateFormat("MM-dd-yyyy").parse("05-06-2017")
+
+        Transaction transaction1 = new Transaction(bankAccount, TransactionType.DEBIT,  5000.00, date3)
+        Transaction transaction2 = new Transaction(bankAccount, TransactionType.CREDIT, 6000.00, date2)
+        Transaction transaction3 = new Transaction(bankAccount, TransactionType.DEBIT,  200.00, date1)
+        def expectedTransactions = [
+                transaction1, transaction2, transaction3
+        ]
+
+        transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> expectedTransactions
+
+        expect:
+        expectedTransactions.asList() == bankAccountService.fetchAllTransactions(bankAccount)
+    }
 
 }
