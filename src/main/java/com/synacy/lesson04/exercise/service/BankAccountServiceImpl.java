@@ -10,6 +10,8 @@ import java.util.List;
 
 public class BankAccountServiceImpl implements BankAccountService {
 
+	private static final BigDecimal MINIMUM_DEPOSIT = BigDecimal.valueOf(200.00);
+
 	private BankAccountDao bankAccountDao;
 	private TransactionDao transactionDao;
 
@@ -34,13 +36,20 @@ public class BankAccountServiceImpl implements BankAccountService {
 	}
 
 	@Override
-	public void deposit(BankAccount bankAccount, BigDecimal amount) {
+	public void deposit(BankAccount bankAccount, BigDecimal amount) throws InsufficientDepositException {
+
+		if(amount.compareTo(MINIMUM_DEPOSIT) < 0) {
+			throw new InsufficientDepositException(bankAccount, amount, MINIMUM_DEPOSIT);
+		}
 
 		BigDecimal balance = bankAccount.getBalance();
-
 		BigDecimal netBalance = balance.add(amount);
-
 		bankAccount.setBalance(netBalance);
+
+		Transaction transaction = new Transaction(
+				bankAccount, TransactionType.DEBIT, amount, new Date());
+		transaction.setStatus(TransactionStatus.CLEARED);
+		transactionDao.saveTransaction(transaction);
 
 		bankAccountDao.saveBankAccount(bankAccount);
 	}

@@ -4,6 +4,7 @@ import com.synacy.lesson04.exercise.dao.BankAccountDao
 import com.synacy.lesson04.exercise.dao.TransactionDao
 import com.synacy.lesson04.exercise.domain.BankAccount
 import com.synacy.lesson04.exercise.domain.InsufficientBalanceException
+import com.synacy.lesson04.exercise.domain.InsufficientDepositException
 import com.synacy.lesson04.exercise.domain.Transaction
 import com.synacy.lesson04.exercise.domain.TransactionType
 import spock.lang.Specification
@@ -92,5 +93,39 @@ class BankAccountServiceTest extends Specification {
 		1 * bankAccountDao.saveBankAccount(bankAccount)
 
 	}
+
+	def "deposit should record the transaction made by the account"() {
+		given:
+		def bankAccount = Mock(BankAccount)
+		bankAccount.getBalance() >> new BigDecimal(2258.25)
+		def amountDeposited = 700.00
+		def date = Mock(Date)
+
+		when:
+		bankAccountService.deposit(bankAccount, amountDeposited)
+
+		then:
+		1 * transactionDao.saveTransaction(*_) >> { Transaction transaction ->
+			assert bankAccount == transaction.bankAccount
+			assert TransactionType.DEBIT == transaction.type
+			assert amountDeposited == transaction.amount
+			assert date == transaction.transactionDate
+		}
+	}
+	def "deposit should throw an exception at deposits less than 200.00"() {
+		given:
+		def bankAccount = Mock(BankAccount)
+		def amountDeposited = 199.99
+
+
+		when:
+		bankAccountService.deposit(bankAccount, amountDeposited)
+
+		then:
+		InsufficientDepositException exception = thrown()
+		bankAccount == exception.bankAccount
+		amountDeposited == exception.amountToDeposit
+	}
+
 
 }

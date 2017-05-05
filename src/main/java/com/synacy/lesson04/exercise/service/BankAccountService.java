@@ -2,6 +2,7 @@ package com.synacy.lesson04.exercise.service;
 
 import com.synacy.lesson04.exercise.domain.BankAccount;
 import com.synacy.lesson04.exercise.domain.InsufficientBalanceException;
+import com.synacy.lesson04.exercise.domain.InsufficientDepositException;
 import com.synacy.lesson04.exercise.domain.Transaction;
 
 import java.math.BigDecimal;
@@ -13,7 +14,7 @@ public interface BankAccountService {
 	// create transaction then apply(set status to CLEARED) then save
 	void withdraw(BankAccount bankAccount, BigDecimal amount) throws InsufficientBalanceException;
 
-	void deposit(BankAccount bankAccount, BigDecimal amount);
+	void deposit(BankAccount bankAccount, BigDecimal amount) throws InsufficientDepositException;
 
 	void transfer(BankAccount sourceBankAccount, BankAccount destinationBankAccount, BigDecimal amount) throws InsufficientBalanceException;
 
