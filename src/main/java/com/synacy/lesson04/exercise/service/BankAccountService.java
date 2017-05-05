@@ -19,5 +19,4 @@ public interface BankAccountService {
 
 	// please take note that transactions are to be sorted starting from most recent
 	List<Transaction> fetchAllTransactions(BankAccount bankAccount);
-
 }

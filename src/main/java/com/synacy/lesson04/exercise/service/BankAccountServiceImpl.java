@@ -5,10 +5,7 @@ import com.synacy.lesson04.exercise.dao.TransactionDao;
 import com.synacy.lesson04.exercise.domain.*;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class BankAccountServiceImpl implements BankAccountService {
 
@@ -81,12 +78,16 @@ public class BankAccountServiceImpl implements BankAccountService {
 
 	@Override
 	public List<Transaction> fetchAllTransactions(BankAccount bankAccount) {
+
 		Set<Transaction> allTransactionSet = transactionDao.fetchAllTransactionsOfBankAccount(bankAccount);
 
 		List<Transaction> allTransactionList = new ArrayList<>();
 		allTransactionList.addAll(allTransactionSet);
 
-		return  allTransactionList;
+		Comparator<Transaction> transactionComparator = Comparator.comparing(Transaction::getTransactionDate);
+		allTransactionList.sort(transactionComparator.reversed());
+
+		return allTransactionList;
 	}
 
 	public BankAccountDao getBankAccountDao() {

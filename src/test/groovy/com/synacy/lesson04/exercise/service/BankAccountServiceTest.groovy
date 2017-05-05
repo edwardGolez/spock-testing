@@ -7,6 +7,10 @@ import com.synacy.lesson04.exercise.domain.InsufficientBalanceException
 import com.synacy.lesson04.exercise.domain.Transaction
 import com.synacy.lesson04.exercise.domain.TransactionType
 import spock.lang.Specification
+import spock.lang.Unroll
+
+import java.lang.reflect.Array
+import java.text.SimpleDateFormat
 
 class BankAccountServiceTest extends Specification {
 
@@ -193,23 +197,31 @@ class BankAccountServiceTest extends Specification {
 			amount == exception.amountToDiminish
 	}
 
-	def "fetchAllTransactions should return list of transactions of the given bank account"(){
-		given:
-			def bankAccount = Mock(BankAccount)
+    def "fetchAllTransactions should return sorted list of transactions of the given bank account"() {
+        given:
+            BankAccount bankAccount = Mock()
 
-			def allTransactionSet = new HashSet<Transaction>()
-			def allTransactionList = new ArrayList<Transaction>()
+            def date1 = new Date(2009, 6, 30)
+            def date2 = new Date(2010, 6, 30)
+            def date3 = new Date(2015, 6, 30)
 
-			allTransactionList.addAll(allTransactionSet)
+            def transaction1 = Mock(Transaction)
+			transaction1.getTransactionDate() >> date1
+			def transaction2 = Mock(Transaction)
+			transaction2.getTransactionDate() >> date2
+			def transaction3 = Mock(Transaction)
+			transaction3.getTransactionDate() >> date3
 
-			transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> allTransactionSet
+            def expectedTransactions = [transaction3, transaction2, transaction1]
 
-		expect:
-			bankAccountService.fetchAllTransactions(bankAccount) == allTransactionList
+            transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> expectedTransactions
 
-
-
-
-	}
+            def expectedTransactionList =  expectedTransactions.asList()
+        when:
+            def actualTransactionList = bankAccountService.fetchAllTransactions(bankAccount)
+        then:
+            expectedTransactionList == actualTransactionList
+    }
 
 }
+
