@@ -77,4 +77,20 @@ class BankAccountServiceTest extends Specification {
 		}
 	}
 
+	def "deposit should increase given bank account's balance by the given amount"() {
+		given:
+		def bankAccount = Mock(BankAccount)
+		bankAccount.getBalance() >> new BigDecimal(2258.25)
+
+		when:
+		bankAccountService.deposit(bankAccount, 700.00)
+
+		then:
+		1 * bankAccount.setBalance(2958.25)
+
+		then:
+		1 * bankAccountDao.saveBankAccount(bankAccount)
+
+	}
+
 }
