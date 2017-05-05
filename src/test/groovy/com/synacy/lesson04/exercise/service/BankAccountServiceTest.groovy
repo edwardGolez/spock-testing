@@ -229,7 +229,9 @@ class BankAccountServiceTest extends Specification {
         def expectedTransactions = [
                 transaction1, transaction2, transaction3
         ]
-        transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> expectedTransactions
+        def unOrderedTransactions = expectedTransactions.collect()
+        Collections.shuffle(unOrderedTransactions)
+        transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> unOrderedTransactions
 
         expect:
         expectedTransactions.asList() == bankAccountService.fetchAllTransactions(bankAccount)
