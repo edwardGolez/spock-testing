@@ -268,33 +268,30 @@ class BankAccountServiceTest extends Specification {
 	def "fetchAllTransactions should return bankAccount's transactions sorted by latest date "() {
 		given:
 		def bankAccount = Mock(BankAccount)
-		def accountOwner = Mock(AccountOwner)
 
-		bankAccount.getOwner() >> accountOwner
+		def transaction1 = Mock(Transaction)
+		def transaction2 = Mock(Transaction)
+		def transaction3 = Mock(Transaction)
 
-		Transaction transaction1 = Mock(Transaction)
-		Transaction transaction2 = Mock(Transaction)
-		Transaction transaction3 = Mock(Transaction)
+		transaction1.getTransactionDate() >> new Date().parse("yyyy/MM/dd", "1973/07/09")
+		transaction2.getTransactionDate() >> new Date().parse("yyyy/MM/dd", "1990/07/09")
+		transaction3.getTransactionDate() >> new Date().parse("yyyy/MM/dd", "2015/07/09")
 
-		def transactions = [
-			transaction1, transaction2, transaction3
+
+		Set transactions = [
+		        transaction1, transaction2, transaction3
 		]
-
-		transaction1.getTransactionDate() >> new Date(2014, 01, 01)
-		transaction2.getTransactionDate() >> new Date(2015, 01, 01)
-		transaction3.getTransactionDate() >> new Date(2016, 01, 01)
 
 		transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> transactions
-
-		def expectedTransactions = [
-			transaction3, transaction2, transaction1
-		]
 
 		when:
 		bankAccountService.fetchAllTransactions(bankAccount)
 
 		then:
-		1 * transactionDao.fetchAllTransactionsOfBankAccount(bankAccount);
-		expectedTransactions == transactionDao.fetchAllTransactionsOfBankAccount(bankAccount);
+		List sortedTransaction = bankAccountService.fetchAllTransactions(bankAccount)
+
+		transaction3.equals(sortedTransaction.get(0))
+		transaction2.equals(sortedTransaction.get(1))
+		transaction1.equals(sortedTransaction.get(2))
 	}
 }

@@ -19,6 +19,6 @@ public interface BankAccountService {
 	void transfer(BankAccount sourceBankAccount, BankAccount destinationBankAccount, BigDecimal amount) throws InsufficientBalanceException, InvalidBankAccountStatusException;
 
 	// please take note that transactions are to be sorted starting from most recent
-	List<Transaction> fetchAllTransactions(BankAccount bankAccount);
+	List<Transaction> fetchAllTransactions(BankAccount bankAccount) throws Exception;
 
 }
