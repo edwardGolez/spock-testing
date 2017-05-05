@@ -75,12 +75,7 @@ public class BankAccountServiceImpl implements BankAccountService {
 
 	@Override
 	public List<Transaction> fetchAllTransactions(BankAccount bankAccount) {
-
-		Set<Transaction> transactions = transactionDao.fetchAllTransactionsOfBankAccount(bankAccount);
-
-		List<Transaction> sortedTransactions = new ArrayList<>();
-
-		sortedTransactions.addAll(transactions);
+		List<Transaction> sortedTransactions = new ArrayList<>(transactionDao.fetchAllTransactionsOfBankAccount(bankAccount));
 
 		Collections.sort(sortedTransactions, (transaction1, transaction2) ->
 				transaction1.getTransactionDate().after(transaction2.getTransactionDate())? -1 : 1);
