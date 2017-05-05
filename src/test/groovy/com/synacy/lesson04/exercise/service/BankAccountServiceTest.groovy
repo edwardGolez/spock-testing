@@ -9,6 +9,8 @@ import com.synacy.lesson04.exercise.domain.Transaction
 import com.synacy.lesson04.exercise.domain.TransactionType
 import spock.lang.Specification
 
+import java.text.SimpleDateFormat
+
 class BankAccountServiceTest extends Specification {
 
 	BankAccountService bankAccountService
@@ -65,6 +67,7 @@ class BankAccountServiceTest extends Specification {
 		bankAccount.getBalance() >> new BigDecimal(2258.25)
 
 		def amountWithdrawn = 500.00
+		def date = Mock(Date)
 
 		when:
 		bankAccountService.withdraw(bankAccount, amountWithdrawn)
@@ -74,7 +77,7 @@ class BankAccountServiceTest extends Specification {
 			assert bankAccount == transaction.bankAccount
 			assert TransactionType.CREDIT == transaction.type
 			assert amountWithdrawn == transaction.amount
-			assert null != transaction.transactionDate
+			assert date == transaction.transactionDate
 		}
 	}
 
@@ -125,6 +128,60 @@ class BankAccountServiceTest extends Specification {
 		InsufficientDepositException exception = thrown()
 		bankAccount == exception.bankAccount
 		amountDeposited == exception.amountToDeposit
+	}
+
+	def "fetchAllTransactions should get all transactions for a given bank account"() {
+		given:
+		def bankAccount = Mock(BankAccount)
+		def transaction1 = Mock(Transaction)
+		def transaction2 = Mock(Transaction)
+		def date1 = Mock(Date)
+		def date2 = Mock(Date)
+		transaction1.transactionDate >> date1
+		transaction2.transactionDate >> date2
+
+		def expectedTransactions = [
+		        transaction1, transaction2
+		]
+
+		transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> expectedTransactions
+
+		when:
+		def actualTransactions = bankAccountService.fetchAllTransactions(bankAccount)
+
+		then:
+		actualTransactions.containsAll(expectedTransactions)
+	}
+
+	def "fetchAllTransactions should return all transactions from a given bank account by date by order of most recent"() {
+		given:
+		def bankAccount = Mock(BankAccount)
+
+		def transaction1 = Mock(Transaction)
+		def transaction2 = Mock(Transaction)
+		def transaction3 = Mock(Transaction)
+
+		def date1 = Mock(Date)
+		def date2 = Mock(Date)
+		def date3 = Mock(Date)
+
+//		transaction1.transactionDate >> date1
+//		transaction2.transactionDate >> date2
+//		transaction3.transactionDate >> date3
+
+		transaction1.transactionDate >> new SimpleDateFormat("MM-dd-yyyy").parse("05-31-2017")
+		transaction2.transactionDate >> new SimpleDateFormat("MM-dd-yyyy").parse("05-20-2017")
+		transaction3.transactionDate >> new SimpleDateFormat("MM-dd-yyyy").parse("05-04-2017")
+
+		def expectedTransactions = [
+		        transaction1, transaction2, transaction3
+		]
+
+		transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> expectedTransactions
+
+		expect:
+		expectedTransactions.asList() == bankAccountService.fetchAllTransactions(bankAccount)
+
 	}
 
 
