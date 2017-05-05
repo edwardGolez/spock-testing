@@ -225,9 +225,9 @@ class BankAccountServiceTest extends Specification {
         Transaction transaction2 = Mock()
         Transaction transaction3 = Mock()
 
-        transaction1.getTransactionDate() >> new SimpleDateFormat("MM-dd-yyyy").parse("05-06-2017")
-        transaction2.getTransactionDate() >> new SimpleDateFormat("MM-dd-yyyy").parse("05-03-2017")
-        transaction3.getTransactionDate() >> new SimpleDateFormat("MM-dd-yyyy").parse("05-01-2017")
+        transaction1.transactionDate >> new SimpleDateFormat("MM-dd-yyyy").parse("05-06-2017")
+        transaction2.transactionDate >> new SimpleDateFormat("MM-dd-yyyy").parse("05-03-2017")
+        transaction3.transactionDate >> new SimpleDateFormat("MM-dd-yyyy").parse("05-01-2017")
 
         def expectedTransactions = [
                 transaction1, transaction2, transaction3
