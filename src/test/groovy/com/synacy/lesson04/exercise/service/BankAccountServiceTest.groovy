@@ -8,6 +8,7 @@ import com.synacy.lesson04.exercise.domain.Transaction
 import com.synacy.lesson04.exercise.domain.TransactionStatus
 import com.synacy.lesson04.exercise.domain.TransactionType
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.text.SimpleDateFormat
 
@@ -80,6 +81,7 @@ class BankAccountServiceTest extends Specification {
 		}
 	}
 
+    @Unroll
     def "deposit should increase given bank account's balance with given amount"() {
         given:
         def bankAccount = Mock(BankAccount)
@@ -101,12 +103,12 @@ class BankAccountServiceTest extends Specification {
         0              | 0               | 0
     }
 
-	def "deposit should record the transaction to the account's balance"() {
+	def "deposit should record the transaction to the account's balance and should set the TransactionStatus to CLEARED"() {
 		given:
 		def bankAccount = Mock(BankAccount)
-		bankAccount.getBalance() >> new BigDecimal(2500.00)
+        bankAccount.getBalance() >> new BigDecimal(2500.00)
 
-		def amountDeposited = 500.00
+        def amountDeposited = 500.00
 
 		when:
 		bankAccountService.deposit(bankAccount, amountDeposited)
@@ -164,7 +166,8 @@ class BankAccountServiceTest extends Specification {
 
     }
 
-    def "transfer should record the transaction of the bank account's balances both from source and destination"() {
+    @Unroll
+    def "transfer should record the transaction of the bank account's balances both from source and destination, and should set both the TransactionStatus to CLEARED"() {
         given:
         def sourceBankAccount = Mock(BankAccount)
         def destinationBankAccount = Mock(BankAccount)
