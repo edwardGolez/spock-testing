@@ -83,16 +83,22 @@ class BankAccountServiceTest extends Specification {
     def "deposit should increase given bank account's balance with given amount"() {
         given:
         def bankAccount = Mock(BankAccount)
-        bankAccount.getBalance() >> new BigDecimal(3000.00)
+        bankAccount.getBalance() >> new BigDecimal(currentBalance)
 
         when:
-        bankAccountService.deposit(bankAccount, 250.00)
+        bankAccountService.deposit(bankAccount, amountToDeposit)
 
         then:
-        1 * bankAccount.setBalance(3250.00)
+        1 * bankAccount.setBalance(netBalance)
 
         then:
         1 * bankAccountDao.saveBankAccount(bankAccount)
+
+        where:
+        currentBalance | amountToDeposit | netBalance
+        3000.00        | 250.00          | 3250.00
+        -500.00        | 600.00          | 100.00
+        0              | 0               | 0
     }
 
 	def "deposit should record the transaction to the account's balance"() {
@@ -155,6 +161,7 @@ class BankAccountServiceTest extends Specification {
         then:
         1 * bankAccountDao.saveBankAccount(sourceBankAccount)
         1 * bankAccountDao.saveBankAccount(destinationBankAccount)
+
     }
 
     def "transfer should record the transaction of the bank account's balances both from source and destination"() {
@@ -198,10 +205,11 @@ class BankAccountServiceTest extends Specification {
         transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> expectedTransactions
 
         when:
-        bankAccountService.fetchAllTransactions(bankAccount)
+        def actualTransactions = bankAccountService.fetchAllTransactions(bankAccount)
 
         then:
-        expectedTransactions.asList() == bankAccountService.fetchAllTransactions(bankAccount)
+        actualTransactions.size() == expectedTransactions.size()
+        actualTransactions.containsAll(expectedTransactions)
     }
 
     def "fetchAllTransactions should see to it that the fetched records are sorted by the most recent transaction"() {
@@ -218,7 +226,6 @@ class BankAccountServiceTest extends Specification {
         def expectedTransactions = [
                 transaction1, transaction2, transaction3
         ]
-
         transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> expectedTransactions
 
         expect:
