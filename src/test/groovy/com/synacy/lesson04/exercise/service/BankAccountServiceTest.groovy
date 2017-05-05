@@ -200,11 +200,13 @@ class BankAccountServiceTest extends Specification {
         given:
         BankAccount bankAccount = Mock()
 
-        Transaction transaction1 = new Transaction(bankAccount, TransactionType.DEBIT, 5000.00, new Date())
-        Transaction transaction2 = new Transaction(bankAccount, TransactionType.DEBIT, 6000.00, new Date())
+        Transaction transaction1 = Mock()
+        Transaction transaction2 = Mock()
         def expectedTransactions = [
                 transaction1, transaction2
         ]
+        transaction1.transactionDate >> new Date()
+        transaction2.transactionDate >> new Date()
         transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> expectedTransactions
 
         when:
@@ -219,13 +221,14 @@ class BankAccountServiceTest extends Specification {
         given:
         BankAccount bankAccount = Mock()
 
-        Date date1 = new SimpleDateFormat("MM-dd-yyyy").parse("05-01-2017")
-        Date date2 = new SimpleDateFormat("MM-dd-yyyy").parse("05-03-2017")
-        Date date3 = new SimpleDateFormat("MM-dd-yyyy").parse("05-06-2017")
+        Transaction transaction1 = Mock()
+        Transaction transaction2 = Mock()
+        Transaction transaction3 = Mock()
 
-        Transaction transaction1 = new Transaction(bankAccount, TransactionType.DEBIT,  5000.00, date3)
-        Transaction transaction2 = new Transaction(bankAccount, TransactionType.CREDIT, 6000.00, date2)
-        Transaction transaction3 = new Transaction(bankAccount, TransactionType.DEBIT,  200.00, date1)
+        transaction1.getTransactionDate() >> new SimpleDateFormat("MM-dd-yyyy").parse("05-06-2017")
+        transaction2.getTransactionDate() >> new SimpleDateFormat("MM-dd-yyyy").parse("05-03-2017")
+        transaction3.getTransactionDate() >> new SimpleDateFormat("MM-dd-yyyy").parse("05-01-2017")
+
         def expectedTransactions = [
                 transaction1, transaction2, transaction3
         ]
