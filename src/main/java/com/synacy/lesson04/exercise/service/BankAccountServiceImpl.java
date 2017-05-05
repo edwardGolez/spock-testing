@@ -5,8 +5,7 @@ import com.synacy.lesson04.exercise.dao.TransactionDao;
 import com.synacy.lesson04.exercise.domain.*;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class BankAccountServiceImpl implements BankAccountService {
 
@@ -50,8 +49,6 @@ public class BankAccountServiceImpl implements BankAccountService {
 	@Override
 	public void transfer(BankAccount sourceBankAccount, BankAccount destinationBankAccount, BigDecimal amount)
 			throws InsufficientBalanceException {
-//	    this.withdraw(sourceBankAccount, amount);
-//	    this.deposit(destinationBankAccount, amount);
         BigDecimal currentBalanceOfSource = sourceBankAccount.getBalance();
         BigDecimal currentBalanceOfDestination = destinationBankAccount.getBalance();
         if(amount.compareTo(currentBalanceOfSource) > 0){
@@ -63,7 +60,6 @@ public class BankAccountServiceImpl implements BankAccountService {
         sourceBankAccount.setBalance(netBalanceOfSource);
         destinationBankAccount.setBalance(netBalanceOfDestination);
 
-        // add to transactions
         Transaction transactionOfSource = new Transaction(
                 sourceBankAccount, TransactionType.CREDIT, amount, new Date());
         transactionOfSource.setStatus(TransactionStatus.CLEARED);
@@ -78,7 +74,15 @@ public class BankAccountServiceImpl implements BankAccountService {
 
 	@Override
 	public List<Transaction> fetchAllTransactions(BankAccount bankAccount) {
-		return null;
+		List<Transaction> resultingTransactions = new ArrayList<>();
+        Set<Transaction> transactions = transactionDao.fetchAllTransactionsOfBankAccount(bankAccount);
+
+        resultingTransactions.addAll(transactions);
+        resultingTransactions.sort(
+                Comparator.comparing(Transaction::getTransactionDate)
+						  .reversed()
+		);
+	    return resultingTransactions;
 	}
 
 	public BankAccountDao getBankAccountDao() {
@@ -96,4 +100,5 @@ public class BankAccountServiceImpl implements BankAccountService {
 	public void setTransactionDao(TransactionDao transactionDao) {
 		this.transactionDao = transactionDao;
 	}
+
 }
