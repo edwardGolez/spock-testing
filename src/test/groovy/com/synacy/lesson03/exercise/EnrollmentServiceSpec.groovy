@@ -57,10 +57,11 @@ class EnrollmentServiceSpec extends spock.lang.Specification {
         EnrollmentDto enrollmentDetails = Mock()
         Student student = Mock()
 
-        CourseClass courseClass = Mock()
+        CourseClass courseClass1 = Mock()
+        CourseClass courseClass2 = Mock()
 
         def enrolledClasses = [
-                courseClass
+                courseClass1, courseClass2
         ]
 
         enrollmentDetails.getStudent() >> student
@@ -70,7 +71,8 @@ class EnrollmentServiceSpec extends spock.lang.Specification {
         service.processEnrollment(enrollmentDetails)
 
         then:
-        1 * courseClassService.enrollStudentToClass(student, courseClass)
+        1 * courseClassService.enrollStudentToClass(student, courseClass1)
+        1 * courseClassService.enrollStudentToClass(student, courseClass2)
     }
 
     def "ProcessEnrollment should notify student via email on processing of enrollment"() {
