@@ -6,6 +6,7 @@ import com.synacy.lesson04.exercise.domain.BankAccount
 import com.synacy.lesson04.exercise.domain.InsufficientBalanceException
 import com.synacy.lesson04.exercise.domain.InsufficientDepositException
 import com.synacy.lesson04.exercise.domain.Transaction
+import com.synacy.lesson04.exercise.domain.TransactionStatus
 import com.synacy.lesson04.exercise.domain.TransactionType
 import spock.lang.Specification
 
@@ -113,6 +114,7 @@ class BankAccountServiceTest extends Specification {
 			assert TransactionType.DEBIT == transaction.type
 			assert amountDeposited == transaction.amount
 			assert date == transaction.transactionDate
+			assert TransactionStatus.CLEARED == transaction.status
 		}
 	}
 	def "deposit should throw an exception at deposits less than 200.00"() {
