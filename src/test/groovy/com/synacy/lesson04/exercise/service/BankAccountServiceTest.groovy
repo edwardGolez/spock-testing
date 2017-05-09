@@ -131,30 +131,7 @@ class BankAccountServiceTest extends Specification {
 		bankAccount == exception.bankAccount
 		amountDeposited == exception.amountToDeposit
 	}
-
-	def "fetchAllTransactions should get all transactions for a given bank account"() {
-		given:
-		def bankAccount = Mock(BankAccount)
-		def transaction1 = Mock(Transaction)
-		def transaction2 = Mock(Transaction)
-		def date1 = Mock(Date)
-		def date2 = Mock(Date)
-		transaction1.transactionDate >> date1
-		transaction2.transactionDate >> date2
-
-		def expectedTransactions = [
-		        transaction1, transaction2
-		]
-
-		transactionDao.fetchAllTransactionsOfBankAccount(bankAccount) >> expectedTransactions
-
-		when:
-		def actualTransactions = bankAccountService.fetchAllTransactions(bankAccount)
-
-		then:
-		actualTransactions.containsAll(expectedTransactions)
-	}
-
+	
 	def "fetchAllTransactions should return all transactions from a given bank account by date by order of most recent"() {
 		given:
 		def bankAccount = Mock(BankAccount)
