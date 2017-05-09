@@ -131,7 +131,52 @@ class BankAccountServiceTest extends Specification {
 		bankAccount == exception.bankAccount
 		amountDeposited == exception.amountToDeposit
 	}
-	
+
+	def "transfer should throw an exception source bank account balance is insufficient"() {
+		given:
+		def sourceBankAccount = Mock(BankAccount)
+		def destinationBankAccount = Mock(BankAccount)
+
+		def balance = 1800.00
+
+		sourceBankAccount.getBalance() >> new BigDecimal(balance)
+
+		def transferAmount = 1800.10
+
+		when:
+		bankAccountService.transfer(sourceBankAccount, destinationBankAccount, transferAmount)
+
+		then:
+		InsufficientBalanceException exception = thrown()
+		sourceBankAccount == exception.bankAccount
+		balance == exception.currentBalance
+		transferAmount == exception.amountToDiminish
+	}
+
+	def "transfer should minus the right amount from the source and add the same amount to the destination account"() {
+		given:
+		def sourceBankAccount = Mock(BankAccount)
+		def destinationBankAccount = Mock(BankAccount)
+		def balanceOfSource= 1800.00
+		def balanceOfDestination= 1000.00
+		def amountToTransfer = 300.00
+
+		sourceBankAccount.getBalance() >> new BigDecimal(balanceOfSource)
+		destinationBankAccount.getBalance() >> new BigDecimal(balanceOfDestination)
+
+		when:
+		bankAccountService.transfer(sourceBankAccount, destinationBankAccount, amountToTransfer)
+
+		then:
+		1 * sourceBankAccount.setBalance(1500.00)
+		1 * bankAccountDao.saveBankAccount(sourceBankAccount)
+
+		then:
+		1 * bankAccountDao.saveBankAccount(destinationBankAccount)
+		1 * destinationBankAccount.setBalance(1300.00)
+
+	}
+
 	def "fetchAllTransactions should return all transactions from a given bank account by date by order of most recent"() {
 		given:
 		def bankAccount = Mock(BankAccount)
